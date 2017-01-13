@@ -20,7 +20,7 @@ public class TripProcesses {
 
     public TripProcesses() {
         // Get Token
-        token = Token.getToken("RoemersR", "RoemersR");
+        token = Token.getToken("tobereplaced", "tobereplaced");
 
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
@@ -60,7 +60,7 @@ public class TripProcesses {
         }
     }
 
-    public void parse() {
+    public void parseToXML() {
         ProcessXMLResponse.parse(response);
     }
 
