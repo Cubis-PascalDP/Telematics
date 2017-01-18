@@ -17,10 +17,11 @@ public class TripProcesses {
     String token = null;
     String recordIdentifier = null;
     InputStream response;
+    String wsMethod;
 
     public TripProcesses() {
         // Get Token
-        token = Token.getToken("tobereplaced", "tobereplaced");
+        token = Token.getToken("RoemersR", "RoemersR");
 
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
@@ -61,7 +62,7 @@ public class TripProcesses {
     }
 
     public void parseToXML() {
-        ProcessXMLResponse.parse(response);
+        ProcessXMLResponse.parse(response, wsMethod);
     }
 
     public void parseToCSV() {
