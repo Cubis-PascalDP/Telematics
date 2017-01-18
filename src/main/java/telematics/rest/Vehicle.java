@@ -10,7 +10,7 @@ import java.io.InputStream;
 /**
  * Created by Pascal De Poorter on 20/12/2016.
  */
-public class Vehicles {
+public class Vehicle {
     static CloseableHttpClient httpClient;
     static HttpPost postRequest;
     String body = null;
@@ -18,7 +18,7 @@ public class Vehicles {
     InputStream response;
     String wsMethod;
 
-    public Vehicles() {
+    public Vehicle() {
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
         }

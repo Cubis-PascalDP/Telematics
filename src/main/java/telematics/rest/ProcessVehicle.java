@@ -8,13 +8,13 @@ import java.util.Scanner;
 /**
  * Created by depoorterp on 21/12/2016.
  */
-public class ProcessTrips extends Trips {
+public class ProcessVehicle extends Vehicle {
     String postBody;
-    String vehicle, dateFrom, dateTo;
+    String vehicle;
 
-    public ProcessTrips() {
-        wsMethod = "GetTripsWithTotalsForDateRange";
-        recordIdentifier = "TripWithTotals";
+    public ProcessVehicle() {
+        wsMethod = "GetVehiclesList";
+        recordIdentifier = "Vehicle";
     }
 
     public void parseArguments(String[] arguments) {
@@ -22,38 +22,26 @@ public class ProcessTrips extends Trips {
             if (arguments[i].startsWith("--VEHICLE=")) {
                 vehicle = arguments[i].substring(10);
             }
-            if (arguments[i].startsWith("--STARTDATE=")) {
-                dateFrom = arguments[i].substring(12);
-            }
-            if (arguments[i].startsWith("--ENDDATE=")) {
-                dateTo = arguments[i].substring(10);
-            }
         }
     }
 
     public void setBody() {
         postBody = "";
         if ((vehicle != null) && !vehicle.equals("")) {
-            postBody = postBody + "<vehicleId>" + vehicle + "</vehicleId>";
-            wsMethod = "GetTripsWithTotalsForVehicleInDateRange";
-        }
-        if (!(dateFrom.equals("") || dateTo.equals(""))) {
-            postBody = postBody
-                    + "<StartDateTime>" + dateFrom + "</StartDateTime>"
-                    + "<EndDateTime>" + dateTo + "</EndDateTime>";
+            postBody = postBody + "<VehicleID>" + vehicle + "</VehicleID>";
+            wsMethod = "GetVehicle";
+            recordIdentifier = "GetVehicleResult";
         }
         try {
-            postRequest.setEntity(new StringEntity(body.replaceAll("%method%", wsMethod).replaceAll("%body%", postBody)));
+            String replaceBody = body.replaceAll("%method%", wsMethod).replaceAll("%body%", postBody);
+            postRequest.setEntity(new StringEntity(replaceBody));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
 
-    public void setBody(Integer veh, String startDate, String toDate ) {
-        postBody = postBody + "<vehicleId>" + Integer.toString(veh) + "</vehicleId>";
-        postBody = postBody
-                + "<StartDateTime>" + startDate + "</StartDateTime>"
-                + "<EndDateTime>" + toDate + "</EndDateTime>";
+    public void setBody(Integer veh ) {
+        postBody = postBody + "<VehicleID>" + vehicle + "</VehicleID>";
         try {
             postRequest.setEntity(new StringEntity(body.replaceAll("%method%",wsMethod).replaceAll("%body%", postBody)));
         } catch (UnsupportedEncodingException e) {

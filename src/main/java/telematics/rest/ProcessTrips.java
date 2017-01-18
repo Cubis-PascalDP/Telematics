@@ -8,11 +8,11 @@ import java.util.Scanner;
 /**
  * Created by depoorterp on 21/12/2016.
  */
-public class TripProcessForVehicle extends TripProcesses {
+public class ProcessTrips extends Trips {
     String postBody;
     String vehicle, dateFrom, dateTo;
 
-    public TripProcessForVehicle() {
+    public ProcessTrips() {
         wsMethod = "GetTripsWithTotalsForDateRange";
         recordIdentifier = "TripWithTotals";
     }
