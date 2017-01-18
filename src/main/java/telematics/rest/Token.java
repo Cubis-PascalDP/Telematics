@@ -6,24 +6,29 @@ import org.apache.http.entity.StringEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+import telematics.GetTelemeticsData;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * Created by Pascal De Poorter on 20/12/2016.
  */
 public class Token {
     static String token;
+    private static String user, pw;
 
-    public static String getToken(String user, String pw) {
+    public static void createToken() {
 
         HTTPClient.createClient();
 
-        String Body, token;
+        String Body;
+
+        readTelematicsCredentials();
 
         Body = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
         Body = Body + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">";
@@ -58,11 +63,13 @@ public class Token {
         token = getTokenfromXML( is );
 
         HTTPClient.closeClient();
+    }
 
+    public static String getToken() {
         return token;
     }
 
-    static String getTokenfromXML(InputStream is) {
+    private static String getTokenfromXML(InputStream is) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         DocumentBuilder docBuilder = null;
@@ -81,6 +88,21 @@ public class Token {
         }
 
         return tokenNode.getChildNodes().item(0).getNodeValue();
+    }
+
+    private static void readTelematicsCredentials() {
+
+        try {
+            InputStream propFile = GetTelemeticsData.class.getResourceAsStream("/telematics.properties");
+            Properties prop = new Properties();
+            prop.load(propFile);
+            user = prop.getProperty("user");
+            pw = prop.getProperty("password");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

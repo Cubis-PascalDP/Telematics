@@ -14,15 +14,11 @@ public class TripProcesses {
     static CloseableHttpClient httpClient;
     static HttpPost postRequest;
     String body = null;
-    String token = null;
     String recordIdentifier = null;
     InputStream response;
     String wsMethod;
 
     public TripProcesses() {
-        // Get Token
-        token = Token.getToken("RoemersR", "RoemersR");
-
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
         }
@@ -35,7 +31,7 @@ public class TripProcesses {
                 + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">"
                 + "  <soap12:Header>"
                 + "    <TokenHeader xmlns=\"http://www.omnibridge.com/SDKWebServices/AssetData\">"
-                + "      <Token>" + token + "</Token>"
+                + "      <Token>" + Token.getToken() + "</Token>"
                 + "    </TokenHeader>"
                 + "  </soap12:Header>"
                 + "  <soap12:Body>"
