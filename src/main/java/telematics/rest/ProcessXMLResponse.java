@@ -21,11 +21,10 @@ import java.io.StringWriter;
 /**
  * Created by depoorterp on 3/01/2017.
  */
-public class ProcessXMLResponse {
-    private static String resultRecord = null;
+public class ProcessXMLResponse {;
     private static String delimiter = null;
 
-    public static void parse(InputStream is) {
+    public static void parse(InputStream is, String eventMethod) {
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLOutputFactory oFactory = XMLOutputFactory.newInstance();
@@ -36,10 +35,10 @@ public class ProcessXMLResponse {
             while(eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
                 if (event.isStartElement() &&
-                        ((StartElement) event).getName().getLocalPart().equals("GetTripsWithTotalsForVehicleInDateRangeResult") ) {
+                        ((StartElement) event).getName().getLocalPart().equals(eventMethod + "Result") ) {
                     eventWriter = oFactory.createXMLEventWriter(sw);
                 } else if (event.isEndElement() &&
-                        ((EndElement) event).getName().getLocalPart().equals("GetTripsWithTotalsForVehicleInDateRangeResult") ) {
+                        ((EndElement) event).getName().getLocalPart().equals(eventMethod+ "Result") ) {
                     break;
                 } else if (eventWriter != null) {
                     eventWriter.add(event);

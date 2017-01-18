@@ -10,10 +10,10 @@ import java.util.Scanner;
  */
 public class TripProcessForVehicle extends TripProcesses {
     String postBody;
-    String wsMethod, vehicle, dateFrom, dateTo;
+    String vehicle, dateFrom, dateTo;
 
     public TripProcessForVehicle() {
-        wsMethod = "GetTripsWithTotalsForVehicleInDateRange";
+        wsMethod = "GetTripsWithTotalsForDateRange";
         recordIdentifier = "TripWithTotals";
     }
 
@@ -33,8 +33,9 @@ public class TripProcessForVehicle extends TripProcesses {
 
     public void setBody() {
         postBody = "";
-        if (!vehicle.equals("")) {
+        if ((vehicle != null) && !vehicle.equals("")) {
             postBody = postBody + "<vehicleId>" + vehicle + "</vehicleId>";
+            wsMethod = "GetTripsWithTotalsForVehicleInDateRange";
         }
         if (!(dateFrom.equals("") || dateTo.equals(""))) {
             postBody = postBody
