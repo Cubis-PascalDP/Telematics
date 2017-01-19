@@ -113,9 +113,11 @@ public class ProcessXMLResponse {;
             if (firstPass) {
                 delimiter = "";
             } else if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
+                    && nodes.item(i).hasChildNodes()
                     && nodes.item(i).getFirstChild().getNodeType() == Node.ELEMENT_NODE) {
                 fieldLevel = level + nodes.item(i).getNodeName() + "_";
             } else if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
+                    && nodes.item(i).hasChildNodes()
                     && nodes.item(i).getFirstChild().getNodeType() == Node.TEXT_NODE) {
                 if (processHeader) {
                     recordField = recordField + delimiter + level + nodes.item(i).getNodeName();
