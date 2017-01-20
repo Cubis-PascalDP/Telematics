@@ -8,12 +8,12 @@ import java.util.Scanner;
 /**
  * Created by depoorterp on 21/12/2016.
  */
-public class TripProcessForVehicle extends TripProcesses {
+public class ProcessTrips extends Trips {
     String postBody;
-    String wsMethod, vehicle, dateFrom, dateTo;
+    String vehicle, dateFrom, dateTo;
 
-    public TripProcessForVehicle() {
-        wsMethod = "GetTripsWithTotalsForVehicleInDateRange";
+    public ProcessTrips() {
+        wsMethod = "GetTripsWithTotalsForDateRange";
         recordIdentifier = "TripWithTotals";
     }
 
@@ -33,8 +33,9 @@ public class TripProcessForVehicle extends TripProcesses {
 
     public void setBody() {
         postBody = "";
-        if (!vehicle.equals("")) {
+        if ((vehicle != null) && !vehicle.equals("")) {
             postBody = postBody + "<vehicleId>" + vehicle + "</vehicleId>";
+            wsMethod = "GetTripsWithTotalsForVehicleInDateRange";
         }
         if (!(dateFrom.equals("") || dateTo.equals(""))) {
             postBody = postBody

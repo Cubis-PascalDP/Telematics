@@ -25,7 +25,7 @@ public class HTTPClient {
 
         /* Check if running at STIB-MIVB */
         String userDomain = System.getenv("USERDOMAIN");
-        if ( userDomain.equals("STIB-MIVB")) {
+        if ( userDomain != null && userDomain.equals("STIB-MIVB")) {
             String user = System.getenv("USERNAME");
             String password = "_Pdpm_1606";
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();

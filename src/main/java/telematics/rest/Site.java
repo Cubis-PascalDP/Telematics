@@ -10,23 +10,20 @@ import java.io.InputStream;
 /**
  * Created by Pascal De Poorter on 20/12/2016.
  */
-public class TripProcesses {
+public class Site {
     static CloseableHttpClient httpClient;
     static HttpPost postRequest;
     String body = null;
-    String token = null;
     String recordIdentifier = null;
     InputStream response;
+    String wsMethod;
 
-    public TripProcesses() {
-        // Get Token
-        token = Token.getToken("tobereplaced", "tobereplaced");
-
+    public Site() {
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
         }
         if (postRequest == null) {
-            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/TripProcessesWS.asmx");
+            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/SiteProcessesWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
         }
 
@@ -34,7 +31,7 @@ public class TripProcesses {
                 + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">"
                 + "  <soap12:Header>"
                 + "    <TokenHeader xmlns=\"http://www.omnibridge.com/SDKWebServices/AssetData\">"
-                + "      <Token>" + token + "</Token>"
+                + "      <Token>" + Token.getToken() + "</Token>"
                 + "    </TokenHeader>"
                 + "  </soap12:Header>"
                 + "  <soap12:Body>"
@@ -61,7 +58,7 @@ public class TripProcesses {
     }
 
     public void parseToXML() {
-        ProcessXMLResponse.parse(response);
+        ProcessXMLResponse.parse(response, wsMethod);
     }
 
     public void parseToCSV() {
