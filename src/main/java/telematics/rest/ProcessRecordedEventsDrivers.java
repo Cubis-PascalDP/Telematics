@@ -50,7 +50,7 @@ public class ProcessRecordedEventsDrivers extends RecordedEvents {
             wsMethod = "GetEventsInDateRangeForDrivers";
             recordIdentifier = "GetEventsInDateRangeForDriversResult";
         }
-        if (!(dateFrom.equals("") || dateTo.equals(""))) {  	
+        if (((dateFrom != null) && !dateFrom.equals("")) || ((dateTo != null) && !dateTo.equals(""))) {  	
             postBody = postBody
                     + "<StartDateTime>" + dateFrom + "</StartDateTime>"
                     + "<EndDateTime>" + dateTo + "</EndDateTime>";
