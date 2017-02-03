@@ -48,30 +48,36 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
 
     public void setBody() {
         postBody = "";
+        wsMethod = "GetEventsInDateRangeForVehicles";
+        recordIdentifier = "GetEventsInDateRangeForVehiclesResult";
+        //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
         if ((vehicles != null) && !vehicles.equals("")) {
             postBody = postBody + "<VehicleIDs>";
             for (int i = 0; i < vehicles.size(); i++){
             	postBody = postBody + "<short>" + vehicles.get(i) + "</short>";
             }
             postBody = postBody + "</VehicleIDs>";
-            wsMethod = "GetEventsInDateRangeForVehicles";
-            recordIdentifier = "GetEventsInDateRangeForVehiclesResult";
         }
+        //Mandatory dateTime in GetEventsInDateRangeForVehicles
         if (((dateFrom != null) && !dateFrom.equals("")) || ((dateTo != null) && !dateTo.equals(""))) {
         	
             postBody = postBody
                     + "<StartDateTime>" + dateFrom + "</StartDateTime>"
                     + "<EndDateTime>" + dateTo + "</EndDateTime>";
         }
+        //Mandatory short in method GetVehicleEventsXMostRecent
         if ((vehicle != null) && !vehicle.equals("")) {
             postBody = postBody + "<VehicleID>" + vehicle + "</VehicleID>";     
             wsMethod = "GetVehicleEventsXMostRecent";
             recordIdentifier = "GetVehicleEventsXMostRecentResult";
         }
+        //Mandatory int in method GetVehicleEventsXMostRecent
         if ((x != null) && !x.equals("")) {
             postBody = postBody
                     + "<X>" + x + "</X>";
         }
+        //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
+        //Optional ArrayOfShort in method GetVehicleEventsXMostRecent
         if ((events != null) && !events.equals("")) {
             postBody = postBody + "<EventDescriptionIDs>";
             for (int i = 0; i < events.size(); i++){
