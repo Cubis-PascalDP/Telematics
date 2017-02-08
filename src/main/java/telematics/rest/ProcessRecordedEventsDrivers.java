@@ -42,7 +42,7 @@ public class ProcessRecordedEventsDrivers extends RecordedEvents {
     public void setBody() {
         postBody = "";
         wsMethod = "GetEventsInDateRangeForDrivers";
-        recordIdentifier = "GetEventsInDateRangeForDriversResult";
+        recordIdentifier = "RecordedEvent";
         //Optional ArrayOfShort in method GetEventsInDateRangeForDrivers
         if ((drivers != null) && !drivers.equals("")) {
             postBody = postBody + "<DriverIDs>";

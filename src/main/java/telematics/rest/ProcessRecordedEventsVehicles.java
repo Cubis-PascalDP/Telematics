@@ -49,7 +49,7 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
     public void setBody() {
         postBody = "";
         wsMethod = "GetEventsInDateRangeForVehicles";
-        recordIdentifier = "GetEventsInDateRangeForVehiclesResult";
+        recordIdentifier = "RecordedEvent";
         //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
         if ((vehicles != null) && !vehicles.equals("")) {
             postBody = postBody + "<VehicleIDs>";
@@ -69,7 +69,6 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
         if ((vehicle != null) && !vehicle.equals("")) {
             postBody = postBody + "<VehicleID>" + vehicle + "</VehicleID>";     
             wsMethod = "GetVehicleEventsXMostRecent";
-            recordIdentifier = "GetVehicleEventsXMostRecentResult";
         }
         //Mandatory int in method GetVehicleEventsXMostRecent
         if ((x != null) && !x.equals("")) {
