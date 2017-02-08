@@ -8,10 +8,10 @@ import java.util.Scanner;
 /**
  * Created by depoorterp on 21/12/2016.
  */
-public class ProcessDriverReportingGroup extends Driver {
+public class ProcessGroup extends Driver {
     String postBody;
 
-    public ProcessDriverReportingGroup() {
+    public ProcessGroup() {
         wsMethod = "GetDriverReportingGroupList";
         recordIdentifier = "DriverReportingGroup";
     }

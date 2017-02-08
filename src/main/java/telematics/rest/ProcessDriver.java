@@ -20,7 +20,7 @@ public class ProcessDriver extends Driver {
     public void parseArguments(String[] arguments) {
         for (int i = 2; i < arguments.length; i ++) {
             if (arguments[i].startsWith("--DRIVER=")) {
-                driver = arguments[i].substring(10);
+                driver = arguments[i].substring(9);
             }
         }
     }

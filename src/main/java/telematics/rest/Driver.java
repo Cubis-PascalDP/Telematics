@@ -25,6 +25,7 @@ public class Driver {
         if (postRequest == null) {
             postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/DriverProcessesWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
+//            postRequest.addHeader("encoding", "utf-8");
         }
 
         body =    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"

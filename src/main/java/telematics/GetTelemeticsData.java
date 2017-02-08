@@ -34,9 +34,9 @@ public class GetTelemeticsData {
                 getResponse.invoke(dynaInst);
                 parse.invoke(dynaInst);
             } catch (ClassNotFoundException e) {
-                System.out.println("First argument is not a valid Parsing Class!");
+                System.err.println("First argument is not a valid Parsing Class!");
             } catch (NoSuchMethodException e) {
-                System.out.println("Reconsider the given arguments. XML|CSV ");
+                System.err.println("Reconsider the given arguments. XML|CSV ");
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -46,8 +46,5 @@ public class GetTelemeticsData {
                 e.printStackTrace();
             }
         }
-
-
- //       System.out.println(tpForVehicle);
     }
 }
