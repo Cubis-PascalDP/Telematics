@@ -41,20 +41,23 @@ public class ProcessRecordedEventsDrivers extends RecordedEvents {
     
     public void setBody() {
         postBody = "";
+        wsMethod = "GetEventsInDateRangeForDrivers";
+        recordIdentifier = "GetEventsInDateRangeForDriversResult";
+        //Optional ArrayOfShort in method GetEventsInDateRangeForDrivers
         if ((drivers != null) && !drivers.equals("")) {
             postBody = postBody + "<DriverIDs>";
             for (int i = 0; i < drivers.size(); i++){
             	postBody = postBody + "<short>" + drivers.get(i) + "</short>";
             }
             postBody = postBody + "</DriverIDs>";
-            wsMethod = "GetEventsInDateRangeForDrivers";
-            recordIdentifier = "GetEventsInDateRangeForDriversResult";
         }
-        if (!(dateFrom.equals("") || dateTo.equals(""))) {  	
+        //Mandatory dateTime in GetEventsInDateRangeForDrivers
+        if (((dateFrom != null) && !dateFrom.equals("")) || ((dateTo != null) && !dateTo.equals(""))) {  	
             postBody = postBody
                     + "<StartDateTime>" + dateFrom + "</StartDateTime>"
                     + "<EndDateTime>" + dateTo + "</EndDateTime>";
         }
+        //Optional ArrayOfShort in method GetEventsInDateRangeForDrivers
         if ((events != null) && !events.equals("")) {
             postBody = postBody + "<EventDescriptionIDs>";
             for (int i = 0; i < events.size(); i++){
