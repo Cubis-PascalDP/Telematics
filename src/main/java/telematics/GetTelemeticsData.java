@@ -27,12 +27,17 @@ public class GetTelemeticsData {
                 Method setBody = dynaClass.getMethod("setBody");
                 Method getResponse = dynaClass.getMethod("getResponse");
                 Method parseArguments = dynaClass.getMethod("parseArguments", String[].class);
+                Method isContinuous = dynaClass.getMethod("isContinuous");
 
                 Object dynaInst = dynaClass.newInstance();
                 parseArguments.invoke(dynaInst, new Object[]{args});
                 setBody.invoke(dynaInst);
-                getResponse.invoke(dynaInst);
-                parse.invoke(dynaInst);
+                do {
+                    setBody.invoke(dynaInst);
+                    getResponse.invoke(dynaInst);
+                    parse.invoke(dynaInst);
+                } while((Boolean) isContinuous.invoke(dynaInst));
+
             } catch (ClassNotFoundException e) {
                 System.err.println("First argument is not a valid Parsing Class!");
             } catch (NoSuchMethodException e) {

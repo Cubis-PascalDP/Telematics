@@ -23,6 +23,7 @@ import java.io.StringWriter;
  */
 public class ProcessXMLResponse {;
     private static String delimiter = null;
+    private static String lastID = null;
 
     public static void parse(InputStream is, String eventMethod) {
         try {
@@ -90,6 +91,8 @@ public class ProcessXMLResponse {;
         }
     }
 
+    public static String getLastID() {return lastID;}
+
     private static void processXMLRecord(String source, boolean processHeader) {
         try {
             DOMResult result = new DOMResult();
@@ -99,6 +102,7 @@ public class ProcessXMLResponse {;
             String record = null;
             record = processNodeList(result.getNode().getChildNodes(), true,"", processHeader);
             System.out.println(record);
+            lastID = record.substring(0,record.indexOf(";") );
         } catch (TransformerConfigurationException e) {
             e.printStackTrace();
         } catch (TransformerException e) {
@@ -133,5 +137,4 @@ public class ProcessXMLResponse {;
         }
         return recordField;
     }
-
 }

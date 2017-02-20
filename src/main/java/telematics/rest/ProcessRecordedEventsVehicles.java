@@ -43,6 +43,14 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
             if (arguments[i].startsWith("--LASTXEVENTS=")) {
             	x = arguments[i].substring(arguments[i].indexOf("=") + 1);
             }
+            if (arguments[i].startsWith("--ID=")) {
+                id = arguments[i].substring(arguments[i].indexOf("=") + 1);
+            }
+            if (arguments[i].startsWith("--CONTINUOUS=")) {
+                if (!id.equals("") && (arguments[i].substring(arguments[i].indexOf("=") + 1).equals("Y")))
+                this.continuous = true;
+                else this.continuous = false;
+            }
         }
     }
 
@@ -74,6 +82,12 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
         if ((x != null) && !x.equals("")) {
             postBody = postBody
                     + "<X>" + x + "</X>";
+        }
+        //Mandatory int in method GetEventsSinceID
+        if ((id != null) && !id.equals("")) {
+            postBody = postBody
+                    + "<ID>" + id + "</ID>";
+            wsMethod = "GetEventsSinceID";
         }
         //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
         //Optional ArrayOfShort in method GetVehicleEventsXMostRecent

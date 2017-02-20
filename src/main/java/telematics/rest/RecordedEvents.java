@@ -13,10 +13,13 @@ import java.io.InputStream;
 public class RecordedEvents {
     static CloseableHttpClient httpClient;
     static HttpPost postRequest;
+    String id = null;
+    String previousId = null;
     String body = null;
     String recordIdentifier = null;
     InputStream response;
     String wsMethod;
+    Boolean continuous = false;
 
     public RecordedEvents() {
         if (httpClient == null) {
@@ -63,5 +66,16 @@ public class RecordedEvents {
 
     public void parseToCSV() {
         ProcessXMLResponse.parseToCSV(response, recordIdentifier);
+        if ( previousId != null && previousId.equals(id)) {
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        previousId = id;
+        id = ProcessXMLResponse.getLastID();
     }
+
+    public boolean isContinuous() { return continuous;}
 }
