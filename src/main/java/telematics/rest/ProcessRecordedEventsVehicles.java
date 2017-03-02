@@ -2,6 +2,9 @@ package telematics.rest;
 
 import org.apache.http.entity.StringEntity;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ArrayList;
@@ -14,7 +17,7 @@ import java.util.Scanner;
 public class ProcessRecordedEventsVehicles extends RecordedEvents {
     
 	String postBody;
-    String dateFrom, dateTo, x, vehicle;
+    String dateFrom, dateTo, x, vehicle, header;
     private static List<String> vehicles;
     private static List<String> events;
 
@@ -22,6 +25,7 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
     }
 
     public void parseArguments(String[] arguments) {
+        System.err.println("Starting Processing: ProcessRecordedEventsVehicle");
         for (int i = 2; i < arguments.length; i ++) {
         	String argId = arguments[i].substring(0, arguments[i].indexOf("=") > 0 ? arguments[i].indexOf("=") : 0);
             if (arguments[i].startsWith("--VEHICLES=")) {
@@ -46,6 +50,19 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
             if (arguments[i].startsWith("--ID=")) {
                 id = arguments[i].substring(arguments[i].indexOf("=") + 1);
             }
+            if (arguments[i].startsWith("--HEADER=")) {
+                header = arguments[i].substring(arguments[i].indexOf("=") + 1);
+            }
+            if (arguments[i].startsWith("--LOG=")) {
+                File file = new File(arguments[i].substring(arguments[i].indexOf("=") + 1));
+                PrintStream ps = null;
+                try {
+                    ps = new PrintStream(file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                System.setErr(ps);
+            }
             if (arguments[i].startsWith("--CONTINUOUS=")) {
                 if (!id.equals("") && (arguments[i].substring(arguments[i].indexOf("=") + 1).equals("Y")))
                 this.continuous = true;
@@ -58,6 +75,9 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
         postBody = "";
         wsMethod = "GetEventsInDateRangeForVehicles";
         recordIdentifier = "RecordedEvent";
+        //Check if a header needs to be generated when CSV output
+        if ((header != null) && !header.equals("Y")) withoutHeader();
+        else withHeader();
         //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
         if ((vehicles != null) && !vehicles.equals("")) {
             postBody = postBody + "<VehicleIDs>";

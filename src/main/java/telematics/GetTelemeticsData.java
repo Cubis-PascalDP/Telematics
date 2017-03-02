@@ -16,8 +16,6 @@ public class GetTelemeticsData {
         } else {
             Class<?> dynaClass;
             try {
-                // Create the telematics token
-                Token.createToken();
                 // Dynamically assign class using the first argument
                 // Argument should represent a one of the rest
                 dynaClass = Class.forName("telematics.rest." + args[0]);
@@ -31,7 +29,6 @@ public class GetTelemeticsData {
 
                 Object dynaInst = dynaClass.newInstance();
                 parseArguments.invoke(dynaInst, new Object[]{args});
-                setBody.invoke(dynaInst);
                 do {
                     setBody.invoke(dynaInst);
                     getResponse.invoke(dynaInst);

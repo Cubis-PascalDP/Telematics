@@ -53,13 +53,17 @@ public class ProcessXMLResponse {;
     }
 
     public static void parseToCSV(InputStream is, String recordIdentifier) {
+        parseToCSV(is, recordIdentifier, true);
+    }
+
+    public static void parseToCSV(InputStream is, String recordIdentifier, boolean withHeader) {
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLOutputFactory oFactory = XMLOutputFactory.newInstance();
             XMLEventReader eventReader = factory.createXMLEventReader(is);
             XMLEventWriter eventWriter = null;
             StringWriter sw = null;
-            Boolean processHeader = true;
+            Boolean processHeader = withHeader;
 
             while(eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();

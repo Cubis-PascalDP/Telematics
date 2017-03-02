@@ -4,6 +4,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,6 +21,7 @@ public class RecordedEvents {
     InputStream response;
     String wsMethod;
     Boolean continuous = false;
+    Boolean withHeader = true;
 
     public RecordedEvents() {
         if (httpClient == null) {
@@ -60,21 +62,36 @@ public class RecordedEvents {
         }
     }
 
+    public void withHeader() {
+        this.withHeader = true;
+    }
+
+    public void withoutHeader() {
+        this.withHeader = false;
+    }
+
     public void parseToXML() {
         ProcessXMLResponse.parse(response, wsMethod);
     }
 
     public void parseToCSV() {
-        ProcessXMLResponse.parseToCSV(response, recordIdentifier);
-        if ( previousId != null && previousId.equals(id)) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        try {
+            ProcessXMLResponse.parseToCSV(response, recordIdentifier, withHeader);
+            if ( previousId != null && previousId.equals(id)) {
+                // Sleep for 5 minutes
+                System.err.println("Sleeping for 5 minutes!");
+                Thread.sleep(300000);
+
             }
+            previousId = id;
+            id = ProcessXMLResponse.getLastID();
+            // Sleep for 30 Seconds.
+            Thread.sleep(30000);
+            System.err.println("Sleeping for 30 seconds!");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        previousId = id;
-        id = ProcessXMLResponse.getLastID();
     }
 
     public boolean isContinuous() { return continuous;}
