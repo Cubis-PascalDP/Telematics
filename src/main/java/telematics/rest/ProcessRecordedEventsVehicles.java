@@ -64,7 +64,7 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
                 System.setErr(ps);
             }
             if (arguments[i].startsWith("--CONTINUOUS=")) {
-                if (!id.equals("") && (arguments[i].substring(arguments[i].indexOf("=") + 1).equals("Y")))
+                if (arguments[i].substring(arguments[i].indexOf("=") + 1).equals("Y"))
                 this.continuous = true;
                 else this.continuous = false;
             }
@@ -102,6 +102,11 @@ public class ProcessRecordedEventsVehicles extends RecordedEvents {
         if ((x != null) && !x.equals("")) {
             postBody = postBody
                     + "<X>" + x + "</X>";
+        }
+        //In case continuous is active and no ID was given see if a lastevent properties file exists
+        //and retrieve event id from properties file
+        if (isContinuous() && id == null) {
+            id = getId();
         }
         //Mandatory int in method GetEventsSinceID
         if ((id != null) && !id.equals("")) {

@@ -1,6 +1,5 @@
 package telematics.rest;
 
-import jdk.internal.util.xml.impl.Input;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -67,7 +66,7 @@ public class Token {
 
     public static String getToken() {
         // Check if a token already exists
-        File tokenPropFile = new File("token.properties");
+        File tokenPropFile = new File("runtime.properties");
         Properties tokenProp = new Properties();
         try {
             if (!tokenPropFile.exists()) {
@@ -79,7 +78,7 @@ public class Token {
                 propOut.close();
             }
             else {
-                FileInputStream profFile = new FileInputStream("token.properties");
+                FileInputStream profFile = new FileInputStream("runtime.properties");
                 tokenProp.load(profFile);
                 token = tokenProp.getProperty("token");
                 if (!validateToken()) {

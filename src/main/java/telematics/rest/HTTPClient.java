@@ -1,9 +1,14 @@
 package telematics.rest;
 
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.NTCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -22,10 +27,22 @@ public class HTTPClient {
         /* Check if running at STIB-MIVB */
         String userDomain = System.getenv("USERDOMAIN");
         if ( userDomain != null && userDomain.equals("STIB-MIVB")) {
-            System.setProperty("http.proxyHost" , "proxy.stib-mivb.be");
-            System.setProperty("http.proxyPort" , "3128");
+            System.setProperty("https.proxyHost" , "proxy.stib-mivb.be");
+            System.setProperty("https.proxyPort" , "3128");
 
-            httpClient = HttpClients.custom().useSystemProperties().build();
+            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+
+            if(System.getProperty("http.proxyUser") != null) {
+                credentialsProvider.setCredentials( new AuthScope("proxy.stib-mivb.be", 3128),
+                        new NTCredentials(System.getProperty("http.proxyUser"), System.getProperty("http.proxyPassword"),
+                                null, userDomain));
+            }
+
+            httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
+
+            HttpHost proxy = new HttpHost("proxy.stib-mivb.be", 3128);
+            config = RequestConfig.custom().setProxy(proxy).build();
+
 
         } else {
             httpClient = HttpClients.createDefault();
