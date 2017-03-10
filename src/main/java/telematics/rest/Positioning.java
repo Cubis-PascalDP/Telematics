@@ -4,14 +4,13 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 
-
 import java.io.*;
 import java.util.Properties;
 
 /**
- * Created by Chris Schraepen on 20/01/2017.
+ * Created by Pascal De Poorter on 9/03/2017.
  */
-public class RecordedEvents {
+public class Positioning {
     static CloseableHttpClient httpClient;
     static HttpPost postRequest;
     String id = null;
@@ -23,24 +22,24 @@ public class RecordedEvents {
     Boolean continuous = false;
     Boolean withHeader = true;
 
-    public RecordedEvents() {
+    public Positioning() {
         if (httpClient == null) {
             httpClient = HTTPClient.createClient();
         }
         if (postRequest == null) {
-            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx");
+            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/PositioningWebSvc/PositioningWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
         }
 
         body =    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
                 + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">"
                 + "  <soap12:Header>"
-                + "    <TokenHeader xmlns=\"http://www.omnibridge.com/SDKWebServices/AssetData\">"
+                + "    <TokenHeader xmlns=\"http://www.omnibridge.com/SDKWebServices/Positioning\">"
                 + "      <Token>" + Token.getToken() + "</Token>"
                 + "    </TokenHeader>"
                 + "  </soap12:Header>"
                 + "  <soap12:Body>"
-                + "    <%method% xmlns=\"http://www.omnibridge.com/SDKWebServices/AssetData\">"
+                + "    <%method% xmlns=\"http://www.omnibridge.com/SDKWebServices/Positioning\">"
                 + "      %body%"
                 + "    </%method%>"
                 + "  </soap12:Body>"

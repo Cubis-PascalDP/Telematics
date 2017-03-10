@@ -85,7 +85,6 @@ public class ProcessRecordedEvents extends RecordedEvents {
             elements = Arrays.asList(argumentList.substring(1,argumentList.length() - 1).split("\\s*,\\s*"));
         return elements;
     }
-    
 
     public String toString() {
         Scanner s = new Scanner(response).useDelimiter("\\A");

@@ -47,7 +47,6 @@ public class ProcessEvents extends Events {
             e.printStackTrace();
         }
     }
-    
 
     public String toString() {
         Scanner s = new Scanner(response).useDelimiter("\\A");

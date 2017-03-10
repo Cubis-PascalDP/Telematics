@@ -64,4 +64,6 @@ public class Site {
     public void parseToCSV() {
         ProcessXMLResponse.parseToCSV(response, recordIdentifier);
     }
+
+    public boolean isContinuous() { return false;}
 }
