@@ -1,4 +1,4 @@
-package telematics.rest;
+package utils;
 
 
 import org.apache.http.HttpHost;
@@ -14,43 +14,54 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 
+import static telematics.GetTelematicsData.ta;
+
 /**
- * Created by depoorterp on 22/12/2016.
+ * This class administrates the connection with the internet in order to allow RESTFUL interogations to the
+ * Telematics api
+ *
+ * @author  Pascal De Poorter
+ * @version 1.0
+ * @since   01-01-2017
  */
 public class HTTPClient {
-    static CloseableHttpClient httpClient;
-    static RequestConfig config;
 
-    /* Create http Client and decide if proxy needs to be used */
-    public static CloseableHttpClient createClient() {
+    private static CloseableHttpClient httpClient;
+    private static RequestConfig config;
 
-        /* Check if running at STIB-MIVB */
-        String userDomain = System.getenv("USERDOMAIN");
-        if ( userDomain != null && userDomain.equals("STIB-MIVB")) {
-            System.setProperty("https.proxyHost" , "proxy.stib-mivb.be");
-            System.setProperty("https.proxyPort" , "3128");
+    /**
+     * Initializes the http client.
+     */
+    public static void createClient() {
+
+        /* Check if running at behind proxy */
+        if ( ta.getProxyHost() != null && !ta.getProxyHost().equals("")) {
 
             CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
-            if(System.getProperty("http.proxyUser") != null) {
-                credentialsProvider.setCredentials( new AuthScope("proxy.stib-mivb.be", 3128),
-                        new NTCredentials(System.getProperty("http.proxyUser"), System.getProperty("http.proxyPassword"),
-                                null, userDomain));
+            if(!ta.getProxyUser().equals("")) {
+                credentialsProvider.setCredentials( new AuthScope(ta.getProxyHost(), ta.getProxyPort()),
+                        new NTCredentials(ta.getProxyUser(), ta.getProxyPassword(),
+                                null, "STIB-MIVB"));
             }
 
             httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
 
-            HttpHost proxy = new HttpHost("proxy.stib-mivb.be", 3128);
+            HttpHost proxy = new HttpHost(ta.getProxyHost(), ta.getProxyPort());
             config = RequestConfig.custom().setProxy(proxy).build();
 
 
         } else {
             httpClient = HttpClients.createDefault();
         }
-
-        return httpClient;
     }
 
+    /**
+     * Post the api body through the http Client and captures the response
+     *
+     * @param post Post message created by the command processing class
+     * @return Response message returned by the Http Client
+     */
     public static HttpResponse getResponse(HttpPost post){
         if (config != null) {
             post.setConfig(config);
@@ -64,6 +75,9 @@ public class HTTPClient {
         return resp;
     }
 
+    /**
+     * Closes the Http Client
+     */
     public static void closeClient() {
         if (httpClient != null) {
             try {
@@ -72,5 +86,13 @@ public class HTTPClient {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Getter for HTTP Client
+     * @return httpClient
+     */
+    public static CloseableHttpClient getHttpClient() {
+        return httpClient;
     }
 }
