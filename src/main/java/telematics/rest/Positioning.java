@@ -3,6 +3,8 @@ package telematics.rest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
+import utils.HTTPClient;
+import utils.ResponseToOutputFormat;
 
 import java.io.*;
 import java.util.Properties;
@@ -23,9 +25,6 @@ public class Positioning {
     Boolean withHeader = true;
 
     public Positioning() {
-        if (httpClient == null) {
-            httpClient = HTTPClient.createClient();
-        }
         if (postRequest == null) {
             postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/PositioningWebSvc/PositioningWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
@@ -72,13 +71,9 @@ public class Positioning {
         this.withHeader = false;
     }
 
-    public void parseToXML() {
-        ProcessXMLResponse.parse(response, wsMethod);
-    }
-
     public void parseToCSV() {
         try {
-            ProcessXMLResponse.parseToCSV(response, recordIdentifier, withHeader);
+ //           ResponseToOutputFormat.parseToCSV(response, recordIdentifier, withHeader);
             if ( previousId != null && previousId.equals(id)) {
                 // Sleep for 5 minutes
                 System.err.println("Sleeping for 5 minutes!");
@@ -86,7 +81,7 @@ public class Positioning {
             } else {
                 // Sleep for 30 Seconds.
                 previousId = id;
-                id = ProcessXMLResponse.getLastID();
+                id = ResponseToOutputFormat.getLastID();
                 saveId(id);
                 System.err.println("Sleeping for 30 seconds!");
                 Thread.sleep(30000);

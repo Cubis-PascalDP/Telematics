@@ -3,6 +3,8 @@ package telematics.rest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
+import utils.HTTPClient;
+import utils.ResponseToOutputFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,9 +21,6 @@ public class Trips {
     String wsMethod;
 
     public Trips() {
-        if (httpClient == null) {
-            httpClient = HTTPClient.createClient();
-        }
         if (postRequest == null) {
             postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/TripProcessesWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
@@ -56,14 +55,5 @@ public class Trips {
             e.printStackTrace();
         }
     }
-
-    public void parseToXML() {
-        ProcessXMLResponse.parse(response, wsMethod);
-    }
-
-    public void parseToCSV() {
-        ProcessXMLResponse.parseToCSV(response, recordIdentifier);
-    }
-
     public boolean isContinuous() { return false;}
 }

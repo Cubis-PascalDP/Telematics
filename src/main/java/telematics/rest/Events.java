@@ -2,26 +2,30 @@ package telematics.rest;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
+import utils.HTTPClient;
+import utils.ResponseToOutputFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by Chris Schraepen on 20/01/2017.
+ * This class is the master class for accessing the following Telematics end-point
+ * <a href="HTTP://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/EventDescriptionProcessWS.asmx">HTTP://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/EventDescriptionProcessWS.asmx</a>
+ *
+ * @author  Chris Schraepen
+ * @version 1.0
+ * @since   20-01-2017
  */
 public class Events {
-    static CloseableHttpClient httpClient;
-    static HttpPost postRequest;
+    HttpPost postRequest;
     String body = null;
-    String recordIdentifier = null;
     InputStream response;
-    String wsMethod;
 
-    public Events() {
-        if (httpClient == null) {
-            httpClient = HTTPClient.createClient();
-        }
+    /**
+     * Initialize the api body.
+     */
+    @SuppressWarnings("unused")
+    public void initialize() {
         if (postRequest == null) {
             postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/EventDescriptionProcessWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
@@ -40,9 +44,12 @@ public class Events {
                 + "    </%method%>"
                 + "  </soap12:Body>"
                 + "</soap12:Envelope>";
-
     }
 
+    /**
+     * After body is completed from the Child class, this method will sent the api call to Telematics
+     * and capture the response.
+     */
     public void getResponse() {
         try {
             HttpResponse httpResponse = HTTPClient.getResponse(postRequest);
@@ -51,17 +58,9 @@ public class Events {
                 throw new RuntimeException("Failed: HTTP code " + httpResponse.getStatusLine().getReasonPhrase());
             }
 
-            response = httpResponse.getEntity().getContent();
+            ResponseToOutputFormat.setResponse(httpResponse.getEntity().getContent());
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void parseToXML() {
-        ProcessXMLResponse.parse(response, wsMethod);
-    }
-
-    public void parseToCSV() {
-        ProcessXMLResponse.parseToCSV(response, recordIdentifier);
     }
 }

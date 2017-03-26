@@ -54,4 +54,6 @@ public class ProcessDriver extends Driver {
         String result = s.hasNext() ? s.next() : "";
         return result;
     }
+
+    public boolean isContinuous() { return false;}
 }

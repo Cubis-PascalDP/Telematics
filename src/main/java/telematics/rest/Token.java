@@ -6,7 +6,8 @@ import org.apache.http.entity.StringEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import telematics.GetTelemeticsData;
+import telematics.GetTelematicsData;
+import utils.HTTPClient;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -22,8 +23,6 @@ public class Token {
     private static String user, pw;
 
     public static void createToken() {
-
- //       HTTPClient.createClient();
 
         String Body;
 
@@ -98,7 +97,6 @@ public class Token {
     }
 
     private static boolean validateToken() {
-//        HTTPClient.createClient();
 
         Boolean validToken = true;
         String Body;
@@ -184,7 +182,7 @@ public class Token {
     private static void readTelematicsCredentials() {
 
         try {
-            InputStream propFile = GetTelemeticsData.class.getResourceAsStream("/telematics.properties");
+            InputStream propFile = GetTelematicsData.class.getResourceAsStream("/telematics.properties");
             Properties prop = new Properties();
             prop.load(propFile);
             user = prop.getProperty("user");
