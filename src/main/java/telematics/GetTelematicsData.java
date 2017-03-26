@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import telematics.rest.ProcessEvents;
 import telematics.rest.ProcessRecordedEvents;
 import utils.HTTPClient;
+import utils.KafkaClientProducer;
 import utils.ResponseToOutputFormat;
 import utils.TreatArguments;
 
@@ -11,6 +12,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import static utils.OutputFormatEnum.KAFKA;
 
 /**
  * The GetTelematicsData program is a java wrapper program around the <a href="http://api.fm-web.co.uk/webservices/">Telematics API</a>
@@ -25,6 +28,7 @@ public class GetTelematicsData {
 
     public static TreatArguments ta = null;
     public static JCommander jc = null;
+    public static KafkaClientProducer kp = null;
 
     private static Class<?> commandClass = null;
     private static Object commandObject = null;
@@ -91,6 +95,9 @@ public class GetTelematicsData {
     private static void run() {
 
         if (commandClass != null) {
+            if (ta.getOutputFormat() == KAFKA) {
+                kp = new KafkaClientProducer();
+            }
             try {
                 // Prepare the command class for usage
                 Method initialize = commandClass.getMethod("initialize");
@@ -111,6 +118,10 @@ public class GetTelematicsData {
                 } while (ta.getContinuous());
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 e.printStackTrace();
+            } finally {
+                if (ta.getOutputFormat() == KAFKA) {
+                    kp.kafkaClose();
+                }
             }
         }
     }

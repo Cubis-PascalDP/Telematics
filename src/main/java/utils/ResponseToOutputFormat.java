@@ -9,7 +9,6 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
@@ -19,7 +18,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import static telematics.GetTelematicsData.kp;
 import static telematics.GetTelematicsData.ta;
+import static utils.OutputFormatEnum.KAFKA;
 
 /**
  * This class is responsible for formatting and outputting the response retrieved the by api command classes
@@ -44,7 +45,7 @@ public class ResponseToOutputFormat {
         switch (ta.getOutputFormat()) {
             case CSV:
             case KAFKA:
-                parseToCSV(response, recordID, ta.getHeader());
+                parseToCSV(response, recordID, ta.getHeader(), ta.getOutputFormat());
                 break;
             case XML:
                 parseToXML(response, method);
@@ -87,7 +88,7 @@ public class ResponseToOutputFormat {
     }
 
 
-    private static void parseToCSV(InputStream is, String recordIdentifier, boolean withHeader) {
+    private static void parseToCSV(InputStream is, String recordIdentifier, boolean withHeader, OutputFormatEnum format) {
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLOutputFactory oFactory = XMLOutputFactory.newInstance();
@@ -102,15 +103,16 @@ public class ResponseToOutputFormat {
                         ((StartElement) event).getName().getLocalPart().equals(recordIdentifier) ) {
                     sw = new StringWriter();
                     eventWriter = oFactory.createXMLEventWriter(sw);
-                    eventWriter.add(event);
+                    if(eventWriter != null) eventWriter.add(event);
                 } else if (event.isEndElement() &&
                         ((EndElement) event).getName().getLocalPart().equals(recordIdentifier) ) {
+                    assert eventWriter != null;
                     eventWriter.add(event);
                     if (processHeader) {
-                        processXMLRecord(sw.toString(), processHeader);
+                        processXMLRecord(sw.toString(), true, format);
                         processHeader = false;
                     }
-                    processXMLRecord(sw.toString(), processHeader);
+                    processXMLRecord(sw.toString(), processHeader, format);
                     eventWriter = null;
                     sw.close();
 
@@ -119,16 +121,14 @@ public class ResponseToOutputFormat {
                 }
             }
             if (eventWriter != null) eventWriter.close();
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (XMLStreamException | IOException e) {
             e.printStackTrace();
         }
     }
 
     public static String getLastID() {return lastID;}
 
-    private static void processXMLRecord(String source, boolean processHeader) {
+    private static void processXMLRecord(String source, boolean processHeader, OutputFormatEnum format) {
         try {
             DOMResult result = new DOMResult();
             TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -136,12 +136,14 @@ public class ResponseToOutputFormat {
             t.transform(new StreamSource(new StringReader(source)), result);
             String record;
             record = processNodeList(result.getNode().getChildNodes(), true,"", processHeader);
-            System.out.println(record);
-            lastID = record.substring(0,record.indexOf(";") );
+            lastID = record.substring(0, record.indexOf(";"));
+            if (format == KAFKA) {
+                kp.sendMessage(ta.getKafkaTopic(), lastID, record);
+            } else {
+                System.out.println(record);
+            }
             if (NumberUtils.isNumber(lastID)) ta.setLastEventID(Integer.parseInt(lastID));
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
+        } catch ( TransformerException e) {
             e.printStackTrace();
         }
     }
