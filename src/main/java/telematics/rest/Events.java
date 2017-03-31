@@ -57,7 +57,6 @@ public class Events {
             if(httpResponse.getStatusLine().getStatusCode() != 200) {
                 throw new RuntimeException("Failed: HTTP code " + httpResponse.getStatusLine().getReasonPhrase());
             }
-
             ResponseToOutputFormat.setResponse(httpResponse.getEntity().getContent());
         } catch (IOException e) {
             e.printStackTrace();

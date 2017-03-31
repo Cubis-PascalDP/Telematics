@@ -20,7 +20,6 @@ import static telematics.GetTelematicsData.jc;
  * @since   14-03-2017
  */
 public class TreatArguments {
-    private final String PROPERTIES_FILE = "telematics.properties";
 
     @Parameter(names = {"-o", "--outputFormat"}, required = true, description = "Provide the output format.",
             converter = OutputFormatConvertor.class)
@@ -39,6 +38,11 @@ public class TreatArguments {
     private String proxyPassword;
     @Parameter(names = "--header", description = "Determines if a column header will be generated before parsing the records", arity = 1)
     private Boolean header = true;
+    @SuppressWarnings("unused")
+    @Parameter(names = "--topic", description = "Kafka topic to send the data to.")
+    private String kafkaTopic;
+    @Parameter(names = {"-b", "--bootstrap_server"}, description = "Kafka bootstrap server.")
+    private String kafkaBootstrapServer;
 
     private Integer eventId;
 
@@ -58,11 +62,12 @@ public class TreatArguments {
     public TreatArguments() {
         try {
             Parameters params = new Parameters();
+            String PROPERTIES_FILE = "telematics.properties";
             builder = new FileBasedConfigurationBuilder<FileBasedConfiguration>(PropertiesConfiguration.class)
                             .configure(params.fileBased().setFile(new File(PROPERTIES_FILE)));
             prop = builder.getConfiguration();
             // Telematics User
-            user = System.getenv("TM_USER") == null ? (String) prop.getString("user") : System.getenv("TM_USER");
+            user = System.getenv("TM_USER") == null ? prop.getString("user") : System.getenv("TM_USER");
             // Telematics Password
             pw = System.getenv("TM_PASSWORD") == null ? prop.getString("password") : System.getenv("TM_PASSWORD");
             // Proxy host
@@ -83,12 +88,14 @@ public class TreatArguments {
             // Arguments given to VM get highest priority
             proxyPassword = System.getProperty("http.proxyPassword") == null ? proxyPassword : System.getProperty("http.proxyPassword");
             // Provide header line to output
-            String sHeader = (System.getenv("TM_HEADER") == null) ? prop.getString("header") : System.getenv("TM_HEADER");
+            String sHeader = prop.getString("header");
             header = !(sHeader != null && sHeader.equalsIgnoreCase("FALSE"));
             // Get minimum delay between api calls
             minDelayBetweenAPICalls = prop.getInt("minApiCallDelay");
             // Get delay during continuous processing when no data was retrieved with previous call.
             contDelayNoData = prop.getInt("contDelayNoData");
+            // Get Kafka bootstrap server
+            kafkaBootstrapServer = prop.getString("kafkaBootstrapServer");
 
         } catch (ConfigurationException e) {
             e.printStackTrace();
@@ -96,13 +103,21 @@ public class TreatArguments {
     }
 
     /**
-     * Initialized eventID. Dependant on arguments method decision during jc.pars(). Therefor separate
+     * Initialized eventID. Dependant on arguments method decision during jc.parse(). Therefor separate
      * call from the initialize() method
      */
     public void initializeEventID() {
         // Last processed Event ID from properties file.
         String event = prop.getString("eventId" + jc.getParsedCommand());
         eventId = (event != null) ? Integer.parseInt(event) : null;
+    }
+
+    /**
+     * Overwrites last event id because of passed parameter
+     */
+    public void initLastEventID(Integer eventID) {
+        previousID = null;
+        setLastEventID(eventID);
     }
 
     /**
@@ -149,7 +164,7 @@ public class TreatArguments {
      * Getter for output format
      * @return outputFormat
      */
-    OutputFormatEnum getOutputFormat() {
+    public OutputFormatEnum getOutputFormat() {
         return outputFormat;
     }
 
@@ -231,5 +246,21 @@ public class TreatArguments {
      */
     public void setContinuous(Boolean continuous) {
         this.continuous = continuous;
+    }
+
+    /**
+     * Getter for Kafka Topic
+     * @return kafakTopic
+     */
+    public String getKafkaTopic() {
+        return kafkaTopic;
+    }
+
+    /**
+     * Getter for Kafka bootstrap server
+     * @return kafkaBootstrapServer
+     */
+    public String getKafkaBootstrapServer() {
+        return kafkaBootstrapServer;
     }
 }
