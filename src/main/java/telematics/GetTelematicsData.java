@@ -1,7 +1,9 @@
 package telematics;
 
 import com.beust.jcommander.JCommander;
+import telematics.rest.ProcessEventNotifications;
 import telematics.rest.ProcessEvents;
+import telematics.rest.ProcessPositions;
 import telematics.rest.ProcessRecordedEvents;
 import utils.HTTPClient;
 import utils.KafkaClientProducer;
@@ -33,7 +35,6 @@ public class GetTelematicsData {
     private static Class<?> commandClass = null;
     private static Object commandObject = null;
 
-
     /**
      * Get the telematics data using the arguments passed to the program
      *
@@ -50,6 +51,8 @@ public class GetTelematicsData {
 
         classes.put("ProcessEvents", new ProcessEvents());
         classes.put("ProcessRecordedEvents", new ProcessRecordedEvents());
+        classes.put("ProcessPositions", new ProcessPositions());
+        classes.put("ProcessEventNotifications", new ProcessEventNotifications());
 
         classes.forEach((k, v) -> jc.addCommand(k, v));
 

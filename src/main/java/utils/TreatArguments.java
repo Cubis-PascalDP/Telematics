@@ -103,13 +103,21 @@ public class TreatArguments {
     }
 
     /**
-     * Initialized eventID. Dependant on arguments method decision during jc.pars(). Therefor separate
+     * Initialized eventID. Dependant on arguments method decision during jc.parse(). Therefor separate
      * call from the initialize() method
      */
     public void initializeEventID() {
         // Last processed Event ID from properties file.
         String event = prop.getString("eventId" + jc.getParsedCommand());
         eventId = (event != null) ? Integer.parseInt(event) : null;
+    }
+
+    /**
+     * Overwrites last event id because of passed parameter
+     */
+    public void initLastEventID(Integer eventID) {
+        previousID = null;
+        setLastEventID(eventID);
     }
 
     /**

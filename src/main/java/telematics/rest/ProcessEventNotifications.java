@@ -4,11 +4,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import org.apache.http.entity.StringEntity;
 import utils.DateTimeValidator;
-import utils.ResponseToOutputFormat;
 import utils.IntegerBiggerThan0Validator;
+import utils.ResponseToOutputFormat;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import static telematics.GetTelematicsData.ta;
 
@@ -19,25 +18,22 @@ import static telematics.GetTelematicsData.ta;
  * <p>
  * In relation to the command parameters different api methods are invoked:
  * <ul>
- * <li><i>Default</i>: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?op=GetEventsInDateRangeForVehicles">GetEventsInDateRangeForVehicles</a></li>
- * <li>--vehicles: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?op=GetEventsInDateRangeForVehicles">GetEventsInDateRangeForVehicles</a></li>
- * <li>--drivers: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?op=GetEventsInDateRangeForDrivers">GetEventsInDateRangeForDrivers</a></li>
+ * <li><i>Default</i>: <a href="http://api.fm-web.co.uk/webservices/EventNotificationWebSvc/EventNotificationWS.asmx?op=GetNotificationsForVehicleInDateRange">GetNotificationsForVehicleInDateRange</a></li>
  * <li>--vehicle: Different vehicle related apis are called depending on the given arguments combinations:
  * <ul>
- *     <li>--startdate/--enddate: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?op=GetVehicleEventsInDateRange">GetVehicleEventsInDateRange</a></li>
- *     <li>--lastXevents: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?op=GetVehicleEventsXMostRecent">GetVehicleEventsXMostRecent</a></li>
+ *     <li>--startdate/--enddate: <a href="http://api.fm-web.co.uk/webservices/EventNotificationWebSvc/EventNotificationWS.asmx?op=GetNotificationsForVehicleInDateRange">GetNotificationsForVehicleInDateRange</a></li>
  * </ul>
- * <li>--id and/or --continuous: <a href="http://api.fm-web.co.uk/webservices/AssetDataWebSvc/RecordedEventProcessesWS.asmx?GetEventsSinceID">GetEventsSinceID</a></li>
+ * <li>--id and/or --continuous: <a href="http://api.fm-web.co.uk/webservices/EventNotificationWebSvc/EventNotificationWS.asmx?op=GetNotificationsSinceID">GetNotificationsSinceID</a></li>
+ * <li>--lastXevents: <a href="http://api.fm-web.co.uk/webservices/EventNotificationWebSvc/EventNotificationWS.asmx?op=GetRecentNotifications">GetRecentNotifications</a></li>
  * </ul>
  *
- * @author  Chris Schraepen
+ * @author  Pascal De Poorter
  * @version 1.0
- * @since   20-01-2017
+ * @since   29-03-2017
  */
 @Parameters(commandDescription = "Process recorded vehicle events.")
-public class ProcessRecordedEvents extends RecordedEvents {
-    
-	private String postBody;
+public class ProcessEventNotifications extends EventNotifications {
+
 	@Parameter(names = "--lastXevents", description = "get the records from the api for the X most recent events. Should be " +
                                 "used in combination with the --vehicle argument!")
     @SuppressWarnings("unused")
@@ -52,15 +48,9 @@ public class ProcessRecordedEvents extends RecordedEvents {
     @Parameter(names = "--enddate", description = "End Date/Time offset (yyyy-mm-dd'T'hh:mm). Needs to be combined with --startdate", validateWith = DateTimeValidator.class)
     @SuppressWarnings("unused")
     private String  dateTo;
-    @Parameter(names = "--vehicles", variableArity = true, description = "List of vehicles for which to retrieve information. Needs to be in combination with 'dates' arguments. Cannot be in combination with 'drivers' arguments.", validateWith = IntegerBiggerThan0Validator.class)
-    @SuppressWarnings({"unused","MismatchedQueryAndUpdateOfCollection"})
-    private List<Integer> vehicles;
-    @Parameter(names = "--drivers", description = "List of driver IDs to use as a filter. Needs to be in combination with 'dates' arguments. Cannot be in combination with 'vehicle(s)' arguments.")
-    @SuppressWarnings({"unused","MismatchedQueryAndUpdateOfCollection"})
-    private List<Integer> drivers;
     @Parameter(names = "--events", description = "List of event IDs to use as a filter!")
     @SuppressWarnings({"unused","MismatchedQueryAndUpdateOfCollection"})
-    private List<Integer> events;
+    private String events;
     @Parameter(names = "--ID", description = "get the records from the api since the given ID. Can only be used in combination with --events")
     @SuppressWarnings("unused")
     private Integer id;
@@ -77,17 +67,14 @@ public class ProcessRecordedEvents extends RecordedEvents {
         String message = "";
         // GetVehicleEventsXMostRecent valid body parameter check.
         if ((x != null) && !x.equals("")) {
-            if (vehicle == null) {
-                message = message + "--lastXevents should be used in combination with --vehicle\n";
+            if (vehicle != null) {
+                message = message + "--lastXevents should not be used in combination with --vehicle\n";
             }
             if (dateFrom != null) {
                 message = message + "--lastXevents should not be used in combination with --startdate\n";
             }
             if (dateTo != null) {
                 message = message + "--lastXevents should not be used in combination with --enddate\n";
-            }
-            if (vehicles != null) {
-                message = message + "--lastXevents should not be used in combination with --vehicles\n";
             }
             if (id != null) {
                 message = message + "--lastXevents should not be used in combination with --ID\n";
@@ -107,9 +94,6 @@ public class ProcessRecordedEvents extends RecordedEvents {
             }
             if (dateTo != null) {
                 message = message + "--ID or --continuous should not be used in combination with --enddate\n";
-            }
-            if (vehicles != null) {
-                message = message + "--ID or --continuous should not be used in combination with --vehicles\n";
             }
             if (id == null && ta.getLastEventID() == null && continuous) {
                 message = message + "--continuous runs for the first time for command method. Should initialized using --ID.\n";
@@ -133,15 +117,6 @@ public class ProcessRecordedEvents extends RecordedEvents {
                 return false;
             }
         }
-        // Validate vehicle/driver argument usage
-        if ((vehicle != null) && (vehicles != null)) {
-            System.err.println("--vehicle and --vehicles should not be used together.");
-            return false;
-        }
-        if ((drivers != null) && ((vehicle != null) || (vehicles != null))) {
-            System.err.println("--drivers and --vehicle(s) arguments cannot be combined");
-            return false;
-        }
 
         // Validation of arguments OK
         return true;
@@ -152,15 +127,15 @@ public class ProcessRecordedEvents extends RecordedEvents {
      * determined.
      */
     public void setBody() {
-        postBody = "";
-        String wsMethod ="GetEventsInDateRangeForVehicles";
-        ResponseToOutputFormat.setRecordID("RecordedEvent");
+        String postBody = "";
+        String wsMethod ="GetNotificationsForVehicleInDateRange";
+        ResponseToOutputFormat.setRecordID("EventNotification");
 
         //Mandatory short in method GetVehicleEventsXMostRecent
         if ((x != null) && !x.equals("")) {
             postBody = postBody
-                    + "<X>" + x + "</X>";
-            wsMethod = "GetVehicleEventsXMostRecent";
+                    + "<Count>" + x + "</Count>";
+            wsMethod = "GetRecentNotifications";
         }
         //Mandatory Integer in method GetEventsSinceID
         if (!(id == null || continuous)) {
@@ -188,29 +163,15 @@ public class ProcessRecordedEvents extends RecordedEvents {
         //Optional ArrayOfShort in method GetEventsInDateRangeForVehicles
         //Optional ArrayOfShort in method GetVehicleEventsXMostRecent
         if (events != null) {
-            postBody = postBody + "<EventDescriptionIDs>";
-            events.forEach(event ->  postBody = postBody + "<short>" + event + "</short>");
-            postBody = postBody + "</EventDescriptionIDs>";
+            postBody = postBody + "<EventIDs>" + events + "</EventIDs>";
         }
         //Mandatory dateTime in GetEventsInDateRangeForVehicles
         if (((dateFrom != null) && !dateFrom.equals("")) || ((dateTo != null) && !dateTo.equals(""))) {
             postBody = postBody
-                    + "<StartDateTime>" + dateFrom + "</StartDateTime>"
-                    + "<EndDateTime>" + dateTo + "</EndDateTime>";
+                    + "<FromDate>" + dateFrom + "</FromDate>"
+                    + "<ToDate>" + dateTo + "</ToDate>";
         }
-        //Optional ArrayOfVehicles in GetEventsInDateRangeForVehicles
-        if (vehicles != null) {
-            postBody = postBody + "<VehicleIDs>";
-            vehicles.forEach(veh -> postBody = postBody + "<short>" + veh + "</short>");
-            postBody = postBody + "</VehicleIDs>";
-        }
-        //Optional ArrayOfVehicles in GetEventsInDateRangeForVehicles
-        if (drivers != null) {
-            postBody = postBody + "<DriverIDs>";
-            drivers.forEach(driver -> postBody = postBody + "<short>" + driver + "</short>");
-            postBody = postBody + "</DriverIDs>";
-            wsMethod = "GetEventsInDateRangeForDrivers";
-        }
+
         try {
             ResponseToOutputFormat.setMethod(wsMethod);
             String replaceBody = body.replaceAll("%method%", wsMethod).replaceAll("%body%", postBody);

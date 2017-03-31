@@ -87,12 +87,4 @@ public class HTTPClient {
             }
         }
     }
-
-    /**
-     * Getter for HTTP Client
-     * @return httpClient
-     */
-    public static CloseableHttpClient getHttpClient() {
-        return httpClient;
-    }
 }

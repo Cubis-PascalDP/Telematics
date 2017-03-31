@@ -108,11 +108,13 @@ public class ResponseToOutputFormat {
                         ((EndElement) event).getName().getLocalPart().equals(recordIdentifier) ) {
                     assert eventWriter != null;
                     eventWriter.add(event);
+                    String recordXML = sw.toString().replace("<" + recordIdentifier,
+                            "<" + recordIdentifier + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
                     if (processHeader) {
-                        processXMLRecord(sw.toString(), true, format);
+                        processXMLRecord(recordXML, true, format);
                         processHeader = false;
                     }
-                    processXMLRecord(sw.toString(), processHeader, format);
+                    processXMLRecord(recordXML, processHeader, format);
                     eventWriter = null;
                     sw.close();
 
