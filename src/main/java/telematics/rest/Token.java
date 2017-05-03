@@ -6,7 +6,6 @@ import org.apache.http.entity.StringEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import telematics.GetTelematicsData;
 import utils.HTTPClient;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -15,14 +14,19 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Properties;
 
+import static telematics.GetTelematicsData.ta;
+
 /**
- * Created by Pascal De Poorter on 20/12/2016.
+ * This class gets the token for the passed user and password
+ * @author Pascal De Poorter
+ * @version 1.0
+ * @since 20-12-2016.
  */
 public class Token {
-    static String token;
+    private static String token;
     private static String user, pw;
 
-    public static void createToken() {
+    private static void createToken() {
 
         String Body;
 
@@ -88,8 +92,6 @@ public class Token {
                     propOut.close();
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,7 +114,7 @@ public class Token {
 
         /* Get Authentication token from Web service */
         HttpPost postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/CoreWebSvc/CoreWS.asmx");
-        InputStream is = null;
+        InputStream is;
 
         try {
             postRequest.addHeader("Content-Type", "application/soap+xml");
@@ -140,18 +142,14 @@ public class Token {
     private static String getIDfromXML(InputStream is) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-        DocumentBuilder docBuilder = null;
+        DocumentBuilder docBuilder;
         Node node = null;
         try {
             docBuilder = factory.newDocumentBuilder();
             Document doc = docBuilder.parse(is);
             node = doc.getElementsByTagName("ID").item(0);
 
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        }  catch (SAXException | IOException | ParserConfigurationException e) {
             e.printStackTrace();
         }
         if (node == null) return "";
@@ -161,38 +159,24 @@ public class Token {
     private static String getTokenfromXML(InputStream is) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
-        DocumentBuilder docBuilder = null;
+        DocumentBuilder docBuilder;
         Node tokenNode = null;
         try {
             docBuilder = factory.newDocumentBuilder();
             Document doc = docBuilder.parse(is);
             tokenNode = doc.getElementsByTagName("Token").item(0);
 
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (SAXException | IOException | ParserConfigurationException  e) {
             e.printStackTrace();
         }
 
+        assert tokenNode != null;
         return tokenNode.getChildNodes().item(0).getNodeValue();
     }
 
     private static void readTelematicsCredentials() {
-
-        try {
-            InputStream propFile = GetTelematicsData.class.getResourceAsStream("/telematics.properties");
-            Properties prop = new Properties();
-            prop.load(propFile);
-            user = prop.getProperty("user");
-            pw = prop.getProperty("password");
-            propFile.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+            user = ta.getUser();
+            pw = ta.getPw();
     }
 
 }

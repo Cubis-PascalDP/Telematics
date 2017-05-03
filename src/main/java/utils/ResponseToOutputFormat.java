@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.List;
 
 import static telematics.GetTelematicsData.kp;
 import static telematics.GetTelematicsData.ta;
@@ -34,8 +35,10 @@ public class ResponseToOutputFormat {
     private static String delimiter = null;
     private static String lastID = null;
     private static InputStream response = null;
+    private static List<String> responseOfStrings = null;
     private static String method = null;
     private static String recordID = null;
+    private static boolean responseList = false;
 
     /**
      * Start parsing the response. All parameters should have been provided by the setter methods or retrieved
@@ -45,10 +48,11 @@ public class ResponseToOutputFormat {
         switch (ta.getOutputFormat()) {
             case CSV:
             case KAFKA:
-                parseToCSV(response, recordID, ta.getHeader(), ta.getOutputFormat());
+                if (responseList) parseToCSV(responseOfStrings);
+                else parseToCSV(response, recordID, ta.getHeader(), ta.getOutputFormat());
                 break;
             case XML:
-                parseToXML(response, method);
+                if (!responseList) parseToXML(response, method);
                 break;
             default:
                 System.err.println("Unhandled output method received!");
@@ -87,6 +91,16 @@ public class ResponseToOutputFormat {
         }
     }
 
+    private static void parseToCSV(List<String> outputList) {
+            if (ta.getOutputFormat() == KAFKA) {
+                outputList.forEach(s -> {
+                    String ID = s.substring(0, s.indexOf(";"));
+                    kp.sendMessage(ta.getKafkaTopic(), ID, s);
+                });
+            } else {
+                outputList.forEach(System.out::println);
+            }
+    }
 
     private static void parseToCSV(InputStream is, String recordIdentifier, boolean withHeader, OutputFormatEnum format) {
         try {
@@ -128,6 +142,7 @@ public class ResponseToOutputFormat {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String getLastID() {return lastID;}
 
     private static void processXMLRecord(String source, boolean processHeader, OutputFormatEnum format) {
@@ -139,12 +154,17 @@ public class ResponseToOutputFormat {
             String record;
             record = processNodeList(result.getNode().getChildNodes(), true,"", processHeader);
             lastID = record.substring(0, record.indexOf(";"));
-            if (format == KAFKA) {
-                kp.sendMessage(ta.getKafkaTopic(), lastID, record);
-            } else {
-                System.out.println(record);
+            if ((ta.getMaxID() == null) || (lastID.compareTo(ta.getMaxID().toString()) >= 0 )) {
+                if (format == KAFKA) {
+                    kp.sendMessage(ta.getKafkaTopic(), lastID, record);
+                } else {
+                    System.out.println(record);
+                }
+                if (NumberUtils.isNumber(lastID)) ta.setLastEventID(Integer.parseInt(lastID));
             }
-            if (NumberUtils.isNumber(lastID)) ta.setLastEventID(Integer.parseInt(lastID));
+            else {
+                if (ta.getMaxID() != null) ta.setContinuous(false);
+            }
         } catch ( TransformerException e) {
             e.printStackTrace();
         }
@@ -183,7 +203,17 @@ public class ResponseToOutputFormat {
      * @param response  Response input stream
      */
     public static void setResponse(InputStream response) {
+        responseList = false;
         ResponseToOutputFormat.response = response;
+    }
+
+    /**
+     * Setter for response input list of strings
+     * @param response  Response List of strings
+     */
+    public static void setResponse(List<String> response) {
+        responseList = true;
+        ResponseToOutputFormat.responseOfStrings = response;
     }
 
     /**

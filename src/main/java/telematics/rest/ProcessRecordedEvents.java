@@ -64,6 +64,9 @@ public class ProcessRecordedEvents extends RecordedEvents {
     @Parameter(names = "--ID", description = "get the records from the api since the given ID. Can only be used in combination with --events")
     @SuppressWarnings("unused")
     private Integer id;
+    @Parameter(names = "--MAXID", description = "get the records from the api till the given ID. Can only be used in combination with --events")
+    @SuppressWarnings("unused")
+    private Integer maxId;
     @Parameter(names = "--continuous", description = "Continuously process the api using the GetEventsSinceID. " +
                                          "Processing starts from the event passed with argument --ID or with the last saved event id in properties.")
     @SuppressWarnings("unused")
@@ -142,6 +145,11 @@ public class ProcessRecordedEvents extends RecordedEvents {
             System.err.println("--drivers and --vehicle(s) arguments cannot be combined");
             return false;
         }
+        // Validate maxId
+        if ((maxId != null) && (id == null)) {
+            System.err.println("--MAXID should be used in combination with --ID.");
+            return false;
+        }
 
         // Validation of arguments OK
         return true;
@@ -170,6 +178,8 @@ public class ProcessRecordedEvents extends RecordedEvents {
         }
         // continuous uses GetEventsSinceID method
         ta.setContinuous(continuous);
+        ta.setMaxID(maxId);
+
         if (continuous) {
             if (id != null) {
                 ta.initLastEventID(id);
