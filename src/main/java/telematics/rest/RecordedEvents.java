@@ -19,7 +19,6 @@ import java.io.*;
 public class RecordedEvents {
     static HttpPost postRequest;
     String body = null;
-    String recordIdentifier = null;
     InputStream response;
     String wsMethod;
 

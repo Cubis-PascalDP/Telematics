@@ -53,6 +53,9 @@ public class TreatArguments {
     private Integer contDelayNoData = null;
     private Integer previousID = null;
 
+    private Integer maxID = null;
+    private boolean dbProcessing = false;
+
 
     /**
      * During construction parameters will be looked up in the telematics.properties file. They will be overwritten
@@ -126,7 +129,7 @@ public class TreatArguments {
      */
     public void setLastEventID(Integer eventID) {
         // Only set events if continuous flag is set
-        if (continuous) {
+        if (continuous && !dbProcessing) {
             eventId = eventID;
             prop.setProperty("eventId" + jc.getParsedCommand(), eventID);
             try {
@@ -141,15 +144,22 @@ public class TreatArguments {
      * Continuous processing delay
      */
     public void delay() {
-        if (previousID != null && eventId != null) {
-            try {
-                if (previousID.equals(eventId)) Thread.sleep( contDelayNoData * 1000);
-                else Thread.sleep(minDelayBetweenAPICalls * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        try {
+            if (dbProcessing) Thread.sleep(2000);
+            else {
+
+                if (previousID != null && eventId != null && !dbProcessing) {
+
+                    if (previousID.equals(eventId)) Thread.sleep( contDelayNoData * 1000);
+                    else Thread.sleep(minDelayBetweenAPICalls * 1000);
+
+                }
+
             }
+            previousID = eventId;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        previousID = eventId;
     }
 
     /**
@@ -262,5 +272,20 @@ public class TreatArguments {
      */
     public String getKafkaBootstrapServer() {
         return kafkaBootstrapServer;
+    }
+
+    /**
+     * Turn on DB Processing
+     */
+    public void dbProcessingOn() {
+        dbProcessing = true;
+    }
+
+    public Integer getMaxID() {
+        return maxID;
+    }
+
+    public void setMaxID(Integer maxID) {
+        this.maxID = maxID;
     }
 }

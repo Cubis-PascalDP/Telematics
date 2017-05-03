@@ -1,0 +1,27 @@
+ALTER VIEW [RecordedEvents] AS
+SELECT [EventKey] as [ID]
+      ,[VehicleID] as [VehicleID]
+	  ,[EventID] as [EventID]
+      ,CASE WHEN [EventType] = 1 THEN 'Detail'
+	        WHEN [EventType] = 2 THEN 'Summary'
+			ELSE 'Notification'
+	   END as [EventType]
+      ,[StartSequence] as [StartSeq]
+	  ,[EndSequence] as [EndSeq]
+	  ,[DriverID] as [DriverID]
+      ,[OriginalDriverID] as [OriginalDriverID]
+      ,convert(varchar(30), DATEADD(hh, -1,[StartDate]), 126) + '+00:00'  as [Start]
+      ,convert(varchar(30), DATEADD(hh, -1, [EndDate]), 126) + '+00:00' as [End]
+	  ,convert(varchar(30), DATEADD(hh, -1, [StartDate]), 126) + '+00:00' as [RecordedDateTime]
+      ,isnull([StartOdometer],0) as [StartOdo]
+	  ,isnull([EndOdometer],0) as [EndOdo]
+	  , 0 as [Odometer]
+      ,isnull([StartGPSID],0) as [StartGPSID]
+      ,isnull([EndGPSID],0) as [EndGPSID]
+      ,isnull([TotalTime],0) as [TotalTime]
+      ,isnull([TotalOccurs],0) as [TotalOccurs]
+      ,isnull([Value],0) as [Value]
+      ,isnull([Litres],0) as [Litres]
+      ,isnull([PulseParameterID],0) as [F3Parameter]
+      ,isnull([PulseValue],0) as [F3Value]
+  FROM [STIB_MIVB_2014].[dbo].[tbEventData]
