@@ -1,6 +1,7 @@
 package telematics;
 
 import com.beust.jcommander.JCommander;
+import telematics.db.TableRecordedEvents;
 import telematics.rest.ProcessEventNotifications;
 import telematics.rest.ProcessEvents;
 import telematics.rest.ProcessPositions;
@@ -53,6 +54,7 @@ public class GetTelematicsData {
         classes.put("ProcessRecordedEvents", new ProcessRecordedEvents());
         classes.put("ProcessPositions", new ProcessPositions());
         classes.put("ProcessEventNotifications", new ProcessEventNotifications());
+        classes.put("TableRecordedEvents", new TableRecordedEvents());
 
         classes.forEach((k, v) -> jc.addCommand(k, v));
 
