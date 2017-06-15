@@ -2,10 +2,7 @@ package telematics;
 
 import com.beust.jcommander.JCommander;
 import telematics.db.TableRecordedEvents;
-import telematics.rest.ProcessEventNotifications;
-import telematics.rest.ProcessEvents;
-import telematics.rest.ProcessPositions;
-import telematics.rest.ProcessRecordedEvents;
+import telematics.rest.*;
 import utils.HTTPClient;
 import utils.KafkaClientProducer;
 import utils.ResponseToOutputFormat;
@@ -51,10 +48,12 @@ public class GetTelematicsData {
         Map<String, Object> classes = new HashMap<>();
 
         classes.put("ProcessEvents", new ProcessEvents());
+        classes.put("ProcessDriver", new ProcessDriver());
         classes.put("ProcessRecordedEvents", new ProcessRecordedEvents());
         classes.put("ProcessPositions", new ProcessPositions());
         classes.put("ProcessEventNotifications", new ProcessEventNotifications());
         classes.put("TableRecordedEvents", new TableRecordedEvents());
+
 
         classes.forEach((k, v) -> jc.addCommand(k, v));
 

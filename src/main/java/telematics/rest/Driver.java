@@ -2,16 +2,13 @@ package telematics.rest;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
 import utils.HTTPClient;
 import utils.ResponseToOutputFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Created by Pascal De Poorter on 20/12/2016.
- */
+
 public class Driver {
     static HttpPost postRequest;
     String body = null;
@@ -19,7 +16,8 @@ public class Driver {
     InputStream response;
     String wsMethod;
 
-    public Driver() {
+    @SuppressWarnings("unused")
+    public void initialize() {
         if (postRequest == null) {
             postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/DriverProcessesWS.asmx");
             postRequest.addHeader("Content-Type", "application/soap+xml");
@@ -50,7 +48,7 @@ public class Driver {
                 throw new RuntimeException("Failed: HTTP code " + httpResponse.getStatusLine().getReasonPhrase());
             }
 
-            response = httpResponse.getEntity().getContent();
+            ResponseToOutputFormat.setResponse(httpResponse.getEntity().getContent());
         } catch (IOException e) {
             e.printStackTrace();
         }

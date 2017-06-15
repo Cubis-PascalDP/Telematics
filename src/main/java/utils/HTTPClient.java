@@ -7,7 +7,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -69,6 +71,17 @@ public class HTTPClient {
         HttpResponse resp = null;
         try {
             resp = httpClient.execute(post);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resp;
+    }
+
+    public static HttpResponse getResponse(HttpGet get) {
+        HttpResponse resp = null;
+
+        try {
+            resp = httpClient.execute(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
