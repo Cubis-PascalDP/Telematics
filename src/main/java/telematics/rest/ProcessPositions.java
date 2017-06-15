@@ -7,9 +7,6 @@ import utils.DateTimeValidator;
 import utils.IntegerBiggerThan0Validator;
 import utils.ResponseToOutputFormat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 

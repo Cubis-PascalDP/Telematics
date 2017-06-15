@@ -1,36 +1,49 @@
 package telematics.rest;
 
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import org.apache.http.entity.StringEntity;
+import utils.ResponseToOutputFormat;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Scanner;
 
 /**
- * Created by depoorterp on 21/12/2016.
+ * This class retrieves the Driver information using the Telematics api. The usage details for the
+ * api can be found <a href="http://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/EventDescriptionProcessWS.asmx">here</a>
+ * <p>
+ * In relation to the command parameters different api methods are invoked:
+ * <ul>
+ * <li>No Parameters: <a href="http://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/DriverProcessWS.asmx?op=GetDriverList">GetDriverList</a></li>
+ * <li>--driver: <a href="http://api.fm-web.co.uk/webservices/UnitConfigurationWebSvc/DriverProcessWS.asmx?op=GetDriver">GetDriver</a></li>
+ * </ul>
+ *
+ * @author  Pascal De Poorter
+ * @version 1.0
+ * @since   15-06-2017
  */
+
+@Parameters(commandDescription = "Process event description or events in use on vehicles")
 public class ProcessDriver extends Driver {
-    String postBody;
-    String driver;
+    @Parameter(names = "--driver", description = "Return driver information for the given dirver.")
+    @SuppressWarnings("unused")
+    private String driver;
 
-    public ProcessDriver() {
-        wsMethod = "GetDriverList";
-        recordIdentifier = "Driver";
-    }
-
-    public void parseArguments(String[] arguments) {
-        for (int i = 2; i < arguments.length; i ++) {
-            if (arguments[i].startsWith("--DRIVER=")) {
-                driver = arguments[i].substring(9);
-            }
-        }
+    /**
+     * Validates if a correct combination of parameters where passed to the command argument
+     * @return boolean as result of the validation
+     */
+    public boolean parseArguments() {
+        return true;
     }
 
     public void setBody() {
-        postBody = "";
+        String postBody = "";
+        String wsMethod = "GetDriverList";
+        ResponseToOutputFormat.setRecordID("Driver");
         if ((driver != null) && !driver.equals("")) {
             postBody = postBody + "<DriverID>" + driver + "</DriverID>";
             wsMethod = "GetDriver";
-            recordIdentifier = "GetDriverResult";
+            ResponseToOutputFormat.setRecordID("GetDriverResult");
         }
         try {
             String replaceBody = body.replaceAll("%method%", wsMethod).replaceAll("%body%", postBody);
@@ -39,21 +52,4 @@ public class ProcessDriver extends Driver {
             e.printStackTrace();
         }
     }
-
-    public void setBody(Integer veh ) {
-        postBody = postBody + "<DriverID>" + driver + "</DriverID>";
-        try {
-            postRequest.setEntity(new StringEntity(body.replaceAll("%method%",wsMethod).replaceAll("%body%", postBody)));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-
-        }
-    }
-    public String toString() {
-        Scanner s = new Scanner(response).useDelimiter("\\A");
-        String result = s.hasNext() ? s.next() : "";
-        return result;
-    }
-
-    public boolean isContinuous() { return false;}
 }

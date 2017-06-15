@@ -75,13 +75,4 @@ public class ProcessEvents extends Events {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Continuous not relevant for this Telematics api.
-     * @return false
-     */
-    public boolean isContinuous() {
-        return false;
-    }
-
 }

@@ -7,7 +7,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -36,16 +38,15 @@ public class HTTPClient {
 
         /* Check if running at behind proxy */
         if ( ta.getProxyHost() != null && !ta.getProxyHost().equals("")) {
+            if(!(ta.getProxyUser() == null) ) {
 
-            CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
-            if(!ta.getProxyUser().equals("")) {
                 credentialsProvider.setCredentials( new AuthScope(ta.getProxyHost(), ta.getProxyPort()),
                         new NTCredentials(ta.getProxyUser(), ta.getProxyPassword(),
-                                null, "STIB-MIVB"));
+                                ta.getProxyHost(), "STIB-MIVB"));
+                httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
             }
-
-            httpClient = HttpClients.custom().setDefaultCredentialsProvider(credentialsProvider).build();
 
             HttpHost proxy = new HttpHost(ta.getProxyHost(), ta.getProxyPort());
             config = RequestConfig.custom().setProxy(proxy).build();
@@ -69,6 +70,17 @@ public class HTTPClient {
         HttpResponse resp = null;
         try {
             resp = httpClient.execute(post);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resp;
+    }
+
+    public static HttpResponse getResponse(HttpGet get) {
+        HttpResponse resp = null;
+
+        try {
+            resp = httpClient.execute(get);
         } catch (IOException e) {
             e.printStackTrace();
         }
