@@ -15,14 +15,16 @@ public class Driver {
     String recordIdentifier = null;
     InputStream response;
     String wsMethod;
+    String URL = "HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/DriverProcessesWS.asmx";
 
     @SuppressWarnings("unused")
     public void initialize() {
         if (postRequest == null) {
-            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/DriverProcessesWS.asmx");
+            postRequest = new HttpPost(URL);
             postRequest.addHeader("Content-Type", "application/soap+xml");
-//            postRequest.addHeader("encoding", "utf-8");
         }
+
+        ResponseToOutputFormat.setURIWSDL(URL);
 
         body =    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
                 + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">"
@@ -37,7 +39,6 @@ public class Driver {
                 + "    </%method%>"
                 + "  </soap12:Body>"
                 + "</soap12:Envelope>";
-
     }
 
     public void getResponse() {

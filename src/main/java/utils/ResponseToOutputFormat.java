@@ -4,6 +4,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.w3c.dom.NodeList;
+import sun.misc.IOUtils;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.Node;
@@ -21,9 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static telematics.GetTelematicsData.kp;
 import static telematics.GetTelematicsData.ta;
@@ -38,13 +38,13 @@ import static utils.OutputFormatEnum.KAFKA;
  */
 public class ResponseToOutputFormat {
 
-    private static String delimiter = null;
     private static String lastID = null;
     private static InputStream response = null;
     private static List<String> responseOfStrings = null;
     private static String method = null;
     private static String recordID = null;
     private static boolean responseList = false;
+    private static String URI = null;
 
     /**
      * Start parsing the response. All parameters should have been provided by the setter methods or retrieved
@@ -129,13 +129,21 @@ public class ResponseToOutputFormat {
                         ((EndElement) event).getName().getLocalPart().equals(recordIdentifier)) {
                     assert eventWriter != null;
                     eventWriter.add(event);
-                    String recordXML = sw.toString().replace("<" + recordIdentifier,
-                            "<" + recordIdentifier + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+                    String xsi = "";
+                    if(sw.toString().startsWith("<" + recordIdentifier)) xsi = "xsi:type=\"CurrentPositionRequest\"";
+                    String recordXML = sw.toString().replace("<" + recordIdentifier + " " + xsi + ">",
+                            "<" + recordIdentifier + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
                     if (processHeader) {
-                        processXMLRecord(recordXML, true, format);
+                        String header = "";
+                        String delimiter = "";
+                        for (String field : responseOfStrings) {
+                            header = header + delimiter + field;
+                            delimiter = ";";
+                        }
                         processHeader = false;
+                        System.out.println(header);
                     }
-                    processXMLRecord(recordXML, processHeader, format);
+                    processXMLRecord(recordXML, format);
                     eventWriter = null;
                     sw.close();
 
@@ -154,14 +162,14 @@ public class ResponseToOutputFormat {
         return lastID;
     }
 
-    private static void processXMLRecord(String source, boolean processHeader, OutputFormatEnum format) {
+    private static void processXMLRecord(String source, OutputFormatEnum format) {
         try {
             DOMResult result = new DOMResult();
             TransformerFactory tFactory = TransformerFactory.newInstance();
             Transformer t = tFactory.newTransformer();
             t.transform(new StreamSource(new StringReader(source)), result);
             String record;
-            record = processNodeList(result.getNode().getChildNodes(), true, "", processHeader);
+            record = processNodeList(result.getNode().getChildNodes(), true, "");
             lastID = record.substring(0, record.indexOf(";"));
             if ((ta.getMaxID() == null) || (lastID.compareTo(ta.getMaxID().toString()) <= 0)) {
                 if (format == KAFKA) {
@@ -178,50 +186,51 @@ public class ResponseToOutputFormat {
         }
     }
 
-    private List<String> processXMLRecord(String source) {
-        List<String> fields = new ArrayList<>();
-
-        return fields;
-    }
-
-    private static String processNodeList(NodeList nodes, boolean firstPass, String level, boolean processHeader) {
-        String fieldLevel = "";
+    private static String processNodeList(NodeList nodes, boolean firstPass, String level) {
+        Map<String, String> fieldMap = processNodes(nodes, "", "");
         String recordField = "";
-        for (int i = 0; i < nodes.getLength(); i++) {
-            if (firstPass) {
-                delimiter = "";
-            } else if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
-                    && nodes.item(i).hasChildNodes()
-                    && nodes.item(i).getFirstChild().getNodeType() == Node.ELEMENT_NODE) {
-                fieldLevel = level + nodes.item(i).getNodeName() + "_";
-            } else if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
-                    && nodes.item(i).hasChildNodes()
-                    && nodes.item(i).getFirstChild().getNodeType() == Node.TEXT_NODE) {
-                if (processHeader) {
-                    recordField = recordField + delimiter + level + nodes.item(i).getNodeName();
-                    delimiter = ";";
-                }
-            } else if (nodes.item(i).getNodeType() == Node.TEXT_NODE) {
-                if (!processHeader) {
-                    recordField = recordField + delimiter + nodes.item(i).getTextContent();
-                    delimiter = ";";
-                }
-            }
-            recordField = recordField + processNodeList(nodes.item(i).getChildNodes(), false, fieldLevel, processHeader);
+        String delimiter = "";
+        for (String field: responseOfStrings) {
+            if (fieldMap.containsKey(field)) recordField =  recordField + delimiter +  fieldMap.get(field);
+            else recordField = recordField + delimiter;
+            delimiter = ";";
         }
         return recordField;
     }
 
-    private static List<String> parseRecordDefinition(InputStream is, String recordIdentifier) throws XMLStreamException, IOException {
+    private static Map<String, String> processNodes(NodeList nodes, String level, String field) {
+        String fieldLevel = "";
+        String recordField = "";
+        Map<String, String> fieldMap = new HashMap<>();
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
+                    && nodes.item(i).hasChildNodes()
+                    && nodes.item(i).getFirstChild().getNodeType() == Node.ELEMENT_NODE) {
+                if(!nodes.item(i).getNodeName().equals(recordID)) fieldLevel = level + nodes.item(i).getNodeName() + "_";
+            } else if (nodes.item(i).getNodeType() == Node.ELEMENT_NODE
+                    && nodes.item(i).hasChildNodes()
+                    && nodes.item(i).getFirstChild().getNodeType() == Node.TEXT_NODE) {
+                recordField = level + nodes.item(i).getNodeName();
+            } else if (nodes.item(i).getNodeType() == Node.TEXT_NODE) {
+                fieldMap.put(level + field, nodes.item(i).getTextContent());
+            }
+            fieldMap.putAll(processNodes(nodes.item(i).getChildNodes(), fieldLevel, recordField));
+            fieldLevel = "";
+        }
+        return fieldMap;
+    }
+
+    private static List<String> parseRecordDefinition(String is, String recordIdentifier, String prefix)
+            throws XMLStreamException, IOException {
 
         List<String> fields = new ArrayList<>();
 
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLEventReader eventReader = factory.createXMLEventReader(is);
+            XMLEventReader eventReader = factory.createXMLEventReader(new StringReader(is));
 
             boolean recordDefStarted = false;
-
 
             while (eventReader.hasNext()) {
                 XMLEvent event = eventReader.nextEvent();
@@ -242,9 +251,13 @@ public class ResponseToOutputFormat {
                     if (recordIDfound) {
                         if (type == null) {
                             recordDefStarted = true;
+                            if (((StartElement) event).getName().getLocalPart().equals("simpleType")) {
+                                fields.add(recordIdentifier);
+                                return fields;
+                            }
                         } else {
                             if (!type.substring(4).equals(recordIdentifier)) {
-                                fields.addAll(parseRecordDefinition(is, type.substring(4)));
+                                fields.addAll(parseRecordDefinition(is, type.substring(4), ""));
                                 return fields;
                             }
                         }
@@ -269,9 +282,13 @@ public class ResponseToOutputFormat {
                         }
                         if (type != null) {
                             if (!type.startsWith("tns")) {
-                                if (name != null) fields.add(name);
+                                if (name != null) fields.add(!(prefix.equals("")) ? prefix + "_" + name : name );
                             } else {
-                                fields.addAll(parseRecordDefinition(is, type.substring(4)));
+                                if(type.substring(4).equals(name)) {
+                                    fields.addAll(parseRecordDefinition(is, type.substring(4), type.substring(4)));
+                                } else {
+                                    if (name != null) fields.add(!(prefix.equals("")) ? prefix + "_" + name : name );
+                                }
                             }
                         }
                     }
@@ -284,7 +301,7 @@ public class ResponseToOutputFormat {
                                 base = attribute.getValue();
                             }
                         }
-                        if (base != null) fields.addAll(parseRecordDefinition(is, base.substring(4)));
+                        if (base != null) fields.addAll(parseRecordDefinition(is, base.substring(4), prefix));
                     }
                 }
             }
@@ -299,10 +316,11 @@ public class ResponseToOutputFormat {
 
 
     private static void createFieldList() {
-        HttpGet getRequest = new HttpGet("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/DriverProcessesWS.asmx?WSDL");
+        HttpGet getRequest = new HttpGet(URI);
         HttpResponse httpResponse = HTTPClient.getResponse(getRequest);
         try {
-            responseOfStrings = parseRecordDefinition(httpResponse.getEntity().getContent(), recordID);
+            String wdslContent = org.apache.commons.io.IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8.name());
+            responseOfStrings = parseRecordDefinition(wdslContent, recordID, "");
         } catch (XMLStreamException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -343,6 +361,14 @@ public class ResponseToOutputFormat {
     public static void setRecordID(String recordID) {
         ResponseToOutputFormat.recordID = recordID;
         createFieldList();
+    }
+
+    /**
+     * Setter to determine the record level for CSV
+     * @param URI URI to WSDL description
+     */
+    public static void setURIWSDL(String URI) {
+        ResponseToOutputFormat.URI = URI + "?WSDL";
     }
 
 }

@@ -48,11 +48,14 @@ public class GetTelematicsData {
         Map<String, Object> classes = new HashMap<>();
 
         classes.put("ProcessEvents", new ProcessEvents());
+        classes.put("ProcessTrips", new ProcessTrips());
         classes.put("ProcessDriver", new ProcessDriver());
+        classes.put("ProcessVehicle", new ProcessVehicle());
         classes.put("ProcessRecordedEvents", new ProcessRecordedEvents());
         classes.put("ProcessPositions", new ProcessPositions());
         classes.put("ProcessEventNotifications", new ProcessEventNotifications());
         classes.put("TableRecordedEvents", new TableRecordedEvents());
+        classes.put("GetMessagesSinceID", new GetMessagesSinceID());
 
 
         classes.forEach((k, v) -> jc.addCommand(k, v));
@@ -108,16 +111,27 @@ public class GetTelematicsData {
                 Method setBody = commandClass.getMethod("setBody");
                 Method getResponse = commandClass.getMethod("getResponse");
 
+                // Process the response from the api linked to the command class
+
                 // Create http Client
                 HTTPClient.createClient();
-
-                // Process the response from the api linked to the command class
                 initialize.invoke(commandObject);
+                // Close http Client
+                HTTPClient.closeClient();
+
+
                 do {
                     ta.delay();
+                    // Create http Client
+                    HTTPClient.createClient();
+
                     setBody.invoke(commandObject);
                     getResponse.invoke(commandObject);
                     ResponseToOutputFormat.parse();
+
+                    // Close http Client
+                    HTTPClient.closeClient();
+
                     ta.setHeader(false);
                 } while (ta.getContinuous());
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

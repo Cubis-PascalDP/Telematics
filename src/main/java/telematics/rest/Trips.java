@@ -19,12 +19,15 @@ public class Trips {
     String recordIdentifier = null;
     InputStream response;
     String wsMethod;
+    String URL = "HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/TripProcessesWS.asmx";
 
-    public Trips() {
+    public void initialize() {
         if (postRequest == null) {
-            postRequest = new HttpPost("HTTP://api.fm-web.co.uk/webservices/AssetDataWebSvc/TripProcessesWS.asmx");
+            postRequest = new HttpPost(URL);
             postRequest.addHeader("Content-Type", "application/soap+xml");
         }
+
+        ResponseToOutputFormat.setURIWSDL(URL);
 
         body =    "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
                 + "<soap12:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap12=\"http://www.w3.org/2003/05/soap-envelope\">"
@@ -50,10 +53,9 @@ public class Trips {
                 throw new RuntimeException("Failed: HTTP code " + httpResponse.getStatusLine().getReasonPhrase());
             }
 
-            response = httpResponse.getEntity().getContent();
+            ResponseToOutputFormat.setResponse(httpResponse.getEntity().getContent());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public boolean isContinuous() { return false;}
 }
